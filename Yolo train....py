@@ -2,7 +2,7 @@
 Retrain the YOLO model for your own dataset.
 """
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0' #If you are training on CPU, use "-1"
 
 import numpy as np
 import keras.backend as K
@@ -16,9 +16,9 @@ from yolo3.utils import get_random_data
 
 
 def _main():
-    annotation_path = 'D:/YOLO_THESIS/Dataset/Great.txt'
+    annotation_path = 'D:/YOLO_THESIS/Dataset/Great.txt' #the path of the annotated dataset
     log_dir = 'logs/'
-    classes_path = 'D:/YOLO_THESIS/Dataset/Great_classes.txt'
+    classes_path = 'D:/YOLO_THESIS/Dataset/Great_classes.txt' #the path for the classes
     anchors_path = 'D:/YOLO_THESIS/Dataset/yolo_anchors.txt'
     class_names = get_classes(classes_path)
     num_classes = len(class_names)
@@ -55,13 +55,13 @@ def _main():
             # use custom yolo_loss Lambda layer.
             'yolo_loss': lambda y_true, y_pred: y_pred})
 
-        batch_size = 4
+        batch_size = 4 #You can increase the batch size depending on the capacity of your system
         print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
         model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes),
                 steps_per_epoch=max(1, num_train//batch_size),
                 validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors, num_classes),
                 validation_steps=max(1, num_val//batch_size),
-                epochs=15,
+                epochs=15, #The epoch should be more than this for a better training result, you can use 50
                 initial_epoch=0,
                 callbacks=[logging, checkpoint])
         model.save_weights(log_dir + 'trained_weights_stage_1.h5')
@@ -80,8 +80,8 @@ def _main():
             steps_per_epoch=max(1, num_train//batch_size),
             validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors, num_classes),
             validation_steps=max(1, num_val//batch_size),
-            epochs=45,
-            initial_epoch=15,
+            epochs=45, #Can use 150 epoches here for better result if you have more GPU memory
+            initial_epoch=15, #As above this can be set at 50
             callbacks=[logging, checkpoint, reduce_lr, early_stopping])
         model.save_weights(log_dir + 'trained_weights_final.h5')
 
